@@ -99,3 +99,10 @@ Ensure you have **Go 1.2x+** installed.
    ```bash
    cp custom-waybar ~/.config/waybar/scripts/
    ```
+
+## 🗒 TODO
+- Stock
+- Crypto
+- Docker staus
+- Uptime
+- Pomodoro timer
