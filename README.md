@@ -106,3 +106,4 @@ Ensure you have **Go 1.2x+** installed.
 - Docker staus
 - Uptime
 - Pomodoro timer
+- World clocks
