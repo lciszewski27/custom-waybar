@@ -17,41 +17,53 @@ func getPackages(command string, args ...string) []string {
 	if err != nil {
 		return []string{}
 	}
+
 	trimmed := strings.TrimSpace(string(output))
 	if trimmed == "" {
 		return []string{}
 	}
+
 	lines := strings.Split(trimmed, "\n")
 	pkgs := make([]string, 0, len(lines))
+
 	for _, line := range lines {
 		fields := strings.Fields(line)
 		if len(fields) > 0 {
 			pkgs = append(pkgs, fields[0])
 		}
 	}
+
 	return pkgs
 }
 
 func (m *Module) Run(args []string) (waybar.WaybarOutput, error) {
 	pacmanPkgs := getPackages("checkupdates")
 	aurPkgs := getPackages("yay", "-Qum")
+	flatpakPkgs := getPackages("flatpak", "remote-ls", "--updates")
 
-	total := len(pacmanPkgs) + len(aurPkgs)
+	total := len(pacmanPkgs) + len(aurPkgs) + len(flatpakPkgs)
 	if total == 0 {
 		return waybar.WaybarOutput{}, nil
 	}
 
 	var tooltips []string
+
 	if len(pacmanPkgs) > 0 {
 		tooltips = append(tooltips, ui.DrawTable("󰮯 Pacman", pacmanPkgs))
 	}
+
 	if len(aurPkgs) > 0 {
 		tooltips = append(tooltips, ui.DrawTable("󰣇 AUR", aurPkgs))
+	}
+
+	if len(flatpakPkgs) > 0 {
+		tooltips = append(tooltips, ui.DrawTable("󰏖 Flatpak", flatpakPkgs))
 	}
 
 	out := waybar.WaybarOutput{
 		Text:    fmt.Sprintf("%d", total),
 		Tooltip: strings.Join(tooltips, "\n"),
 	}
+
 	return out, nil
 }
