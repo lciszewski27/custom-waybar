@@ -36,5 +36,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	if result.Text == "" {
+		os.Exit(0)
+	}
+
 	json.NewEncoder(os.Stdout).Encode(result)
 }
