@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"custom-waybar/modules/countdown"
 	"custom-waybar/modules/updates"
 	"custom-waybar/modules/weather"
 	"custom-waybar/pkg/waybar"
@@ -12,13 +13,16 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "Usage: custom-waybar <module> [args...]")
+		fmt.Fprintln(os.Stderr, "Modules: weather, updates, countdown")
 		os.Exit(1)
 	}
 
-	// Rejestr modułów - tutaj dodajesz nowe funkcjonalności
+	// Module registry — add new modules here
 	registry := map[string]waybar.Module{
-		"weather": &weather.Module{},
-		"updates": &updates.Module{},
+		"weather":   &weather.Module{},
+		"updates":   &updates.Module{},
+		"countdown": &countdown.Module{},
 	}
 
 	moduleName := os.Args[1]
@@ -26,16 +30,25 @@ func main() {
 
 	mod, ok := registry[moduleName]
 	if !ok {
-		fmt.Fprintf(os.Stderr, "Module %s not found\n", moduleName)
+		fmt.Fprintf(os.Stderr, "Error: module %q not found\n", moduleName)
+		fmt.Fprintf(os.Stderr, "Available modules: weather, updates, countdown\n")
 		os.Exit(1)
 	}
 
 	result, err := mod.Run(moduleArgs)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+		// Write error info as waybar output with "error" class so
+		// the user can style it red in their waybar.css
+		errOutput := waybar.OutputClass(
+			fmt.Sprintf("⚠ %s", moduleName),
+			"error",
+		)
+		errOutput.Tooltip = fmt.Sprintf("Error: %v", err)
+		json.NewEncoder(os.Stdout).Encode(errOutput)
+		os.Exit(0)
 	}
 
+	// Empty text → Waybar hides the module
 	if result.Text == "" {
 		os.Exit(0)
 	}
